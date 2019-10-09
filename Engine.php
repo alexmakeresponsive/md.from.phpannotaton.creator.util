@@ -93,7 +93,7 @@ class Engine
         {
                                   $p = array(
                                       'nameMethod' => $nameMethod,
-                                      'line'       => trim($line),
+                                      'line'       => $line,
                                   );
 
             $this->lineController($p);
@@ -129,7 +129,13 @@ class Engine
 
         $lineEx = explode(" ", $p['line']);
 
-                     $lineEx[2] = empty($lineEx[2]) ? 'mixed' : $lineEx[2];
+
+        if (substr($lineEx[1], 0, 1) === '$')
+        {
+            array_splice($lineEx, 2, 0, $lineEx[1] ."");
+
+            $lineEx[1] = '';
+        }
 
 
         $paramType = $lineEx[1];
