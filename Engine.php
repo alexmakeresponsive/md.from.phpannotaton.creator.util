@@ -302,6 +302,15 @@ class Engine
             echo '#### '. $methodName ."\n";
             echo "\n";
 
+            if(!empty($methodDoc['desc']))
+            {
+                echo 'Описание: '."\n";
+
+                $desc = $methodDoc['desc'];
+
+                echo "$desc"."\n\n";
+            }
+
             echo 'Сигнатура: '."\n\n";
             echo "```php"."\n";
                               $listParamSignature = '';
