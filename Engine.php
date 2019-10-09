@@ -304,7 +304,25 @@ class Engine
 
             echo 'Сигнатура: '."\n\n";
             echo "```php"."\n";
-            echo "1"."\n";
+                              $listParamSignature = '';
+                              $indexNumSignature = 0;
+
+            foreach ($methodDoc['listParam'] as $param)
+            {
+                              $indexNumSignature++;
+
+                    $sep = ', ';
+
+                if (count($methodDoc['listParam']) === $indexNumSignature)
+                {
+                    $sep = '';
+                }
+                                       $name = $param['name'];
+
+                $listParamSignature .= $name .$sep;
+            }
+
+            echo "$methodName($listParamSignature)"."\n";
             echo "```"."\n";
 
             if(!empty($methodDoc['listParam']))
