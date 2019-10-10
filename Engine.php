@@ -17,29 +17,14 @@ class Engine
     private $nameMethodCurrent = null;
 
     /**
-     * @var string desc|param|return|prev
+     * @var array
      **/
-    private $lineTypeTarget = null;
+    private $lineCurrent = array();
 
     /**
-     * @var string desc|param|return|prev
-     **/
-    private $lineTypeCurrent = null;
-
-    /**
-     * @var string desc|param|return|prev
-     **/
-    private $lineTypePrev = null;
-
-    /**
-     * @var string desc|param|return|prev
+     * @var array
      **/
     private $mapMethodsDoc = array();
-
-    /**
-     * @var string
-     **/
-    private $lineTextCurrent = '';
 
     public function __construct()
     {
@@ -58,7 +43,11 @@ class Engine
 //        $this->getClassDoc($reflectionClass);
 
         $this->createMapMethodsDoc($reflectionClass);
-        $this->getMethodsDoc($reflectionClass);
+
+//                var_dump($this->mapMethodsDoc);
+//
+//
+        $this->getMethodsDoc();
     }
 
     private function prepareDocClass($s)
@@ -109,6 +98,94 @@ class Engine
         return $b;
     }
 
+    private function getlineType($l)
+    {
+        $lExp = explode(' ', $l);
+
+
+        $t = null;
+
+
+        if (empty($lExp[0]))
+        {
+            $t = 'prev';
+        }
+        else
+        {
+            $t = 'desc';
+        }
+
+        switch (substr($lExp[0], 0, 2))
+        {
+            case '@p':
+                $t = 'param';
+                break;
+            case '@r':
+                $t = 'return';
+                break;
+        }
+
+        return $t;
+    }
+
+    private function createMapMethodsDoc($class)
+    {
+                 $collection = $class->getMethods();
+
+        foreach ($collection as $reflectonMethod)
+        {
+            $this->updateMapMethodDoc($reflectonMethod);
+        }
+    }
+
+    private function updateMapMethodDoc($method)
+    {
+        $s = $method->getDocComment();
+        $b = $this->prepareDocMethod($s);
+
+        $methodName = $method->getName();
+
+            $map = array();
+
+        foreach ($b as $index => $line)
+        {
+            $lT = $this->getlineType($line);
+
+            $map[$methodName][$index] = array(
+                'lineType'       => $lT,
+                'lineTypeParent' => null,
+                'lineText' => $line,
+                'parent'   => null,
+                'key'      => null,
+            );
+
+            if($lT === 'param')
+            {
+                $lineEx = explode(" ", $line);
+
+                $map[$methodName][$index]['key'] = $lineEx[2];
+
+                $map[$methodName][$index]['parent'] = false;
+            }
+
+            if($lT === 'return')
+            {
+                $map[$methodName][$index]['key'] = 'return';
+
+                $map[$methodName][$index]['parent'] = false;
+            }
+
+            if($lT === 'prev')
+            {
+                $map[$methodName][$index]['parent'] = $map[$methodName][$index -1]['parent'] === false ? $map[$methodName][$index -1]['key'] : $map[$methodName][$index -1]['parent'];
+
+                $map[$methodName][$index]['lineTypeParent'] = $map[$methodName][$index -1]['parent'] === false ? $map[$methodName][$index -1]['lineType'] : $map[$methodName][$index -1]['lineTypeParent'];;
+            }
+        }
+
+        $this->mapMethodsDoc = $map;
+    }
+
     private function getClassDoc($class)
     {
         $s = $class->getDocComment();
@@ -123,120 +200,48 @@ class Engine
         );
     }
 
-    private function createMapMethodsDoc($class)
+    private function getMethodsDoc()
     {
-                 $collection = $class->getMethods();
-
-        foreach ($collection as $reflectonMethod)
-        {
-            $this->updateMapMethodDoc($reflectonMethod);
-        }
-
-        var_dump($this->mapMethodsDoc);
-    }
-
-    private function updateMapMethodDoc($method)
-    {
-        $s = $method->getDocComment();
-        $b = $this->prepareDocMethod($s);
-
-        $methodName = $method->getName();
-
-            $map = array();
-
-        foreach ($b as $line)
-        {
-            $lT = $this->getlineType($line);
-
-            $map[$methodName][] = array(
-                'lineType' => $lT,
-                'lineText' => $line,
-            );
-        }
-
-        $this->mapMethodsDoc = $map;
-    }
-
-
-    private function getMethodsDoc($class)
-    {
-        $map = $this->mapMethodsDoc;
+                 $map = $this->mapMethodsDoc;
 
         foreach ($map as $methodName => $methodMap)
         {
             $this->nameMethodCurrent = $methodName;
 
+            $this->lineCurrent = array();
+
             $this->getMethodDoc($methodMap);
         }
 
-//            $this->writeFile();
+            $this->writeFile();
     }
 
     private function getMethodDoc($map)
     {
         foreach ($map as $index => $lineParameters)
         {
-            $this->lineTypeCurrent = $lineParameters['lineType'];
+            $this->lineCurrent = array(
+                'lineType' => $lineParameters['lineType'],
+                'lineTypeParent' => $lineParameters['lineTypeParent'],
+                'lineText' => $lineParameters['lineText'],
+                'parent'   => $lineParameters['parent'],
+                'key'      => $lineParameters['key'],
+            );
 
             $this->setMethodDocController();
         }
     }
 
-    private function getlineType($l)
-    {
-                    $lExp = explode(' ', $l);
-
-
-                $t = null;
-
-
-            if (empty($lExp[0]))
-            {
-                $t = 'prev';
-            }
-            else
-            {
-                $t = 'desc';
-            }
-
-        switch (substr($lExp[0], 0, 2))
-        {
-            case '@p':
-                $t = 'param';
-            break;
-            case '@r':
-                $t = 'return';
-            break;
-        }
-
-        return $t;
-    }
-
-    private function lineController()
-    {
-            $lT = $this->getlineType($this->lineTextCurrent);
-
-        if (empty($this->lineTypeTarget))
-        {
-                  $this->lineTypeTarget = $lT;              // ??
-        }
-
-        if ($this->lineTypeCurrent === 'prev')
-        {
-
-        }
-
-                  $this->lineTypeCurrent = $lT;
-
-        $this->setMethodDocController();
-    }
-
     private function setMethodDocController()
     {
-        switch ($this->lineTypeCurrent)
+                        $lineCurrent = $this->lineCurrent;
+
+                $type = $lineCurrent['lineType'];
+
+        switch ($type)
         {
             case 'prev':
-                $this->setMethodDocPrev();
+                $this->setMethodDocControllerPrev();
             break;
             case 'desc':
                 $this->setMethodDocDesc();
@@ -255,7 +260,11 @@ class Engine
                    $data = $this->data;
         $methods = $data['methods'];
 
-                     $lineEx = explode(" ", $this->lineTextCurrent);
+                           $lineCurrent = $this->lineCurrent;
+        $lineTextCurrent = $lineCurrent['lineText'];
+
+
+                     $lineEx = explode(" ", $lineTextCurrent);
 
         $paramType = $lineEx[1];
         $paramName = $lineEx[2];
@@ -296,20 +305,148 @@ class Engine
 
     private function setMethodDocReturn()
     {
+                   $data = $this->data;
+        $methods = $data['methods'];
 
+                           $lineCurrent = $this->lineCurrent;
+        $lineTextCurrent = $lineCurrent['lineText'];
+
+            $lineEx = explode(" ", $lineTextCurrent);
+
+        $returnType = $lineEx[1];
+
+            unset($lineEx[0],$lineEx[1]);
+
+        $returnDesc = implode(' ', $lineEx);
+
+        if(!isset($methods[$this->nameMethodCurrent]))
+        {
+            $methods[$this->nameMethodCurrent] = array();
+        }
+
+        if(!isset($methods[$this->nameMethodCurrent]['listReturn']))
+        {
+            $methods[$this->nameMethodCurrent]['listReturn'] = array();
+        }
+
+        $methods[$this->nameMethodCurrent] = array_merge(
+            $methods[$this->nameMethodCurrent],
+            array(
+                'listReturn' => array(
+                    'type' => $returnType,
+                    'desc' => $returnDesc,
+                )
+            )
+        );
+
+        $this->data = array_merge(
+            $data,
+            array(
+                'methods' => $methods
+            )
+        );
     }
 
     private function setMethodDocDesc()
     {
+                   $data = $this->data;
+        $methods = $data['methods'];
 
+        if(!isset($methods[$this->nameMethodCurrent]))
+        {
+                  $methods[$this->nameMethodCurrent] = array();
+        }
+
+        if(!isset($methods[$this->nameMethodCurrent]['desc']))
+        {
+                  $methods[$this->nameMethodCurrent]['desc'] = '';
+        }
+
+        $descCurrent = $methods[$this->nameMethodCurrent]['desc'];
+
+        $sr = empty($descCurrent) ? '' : ' ';
+
+
+                           $lineCurrent = $this->lineCurrent;
+        $lineTextCurrent = $lineCurrent['lineText'];
+
+        $methods[$this->nameMethodCurrent] = array_merge(
+            $methods[$this->nameMethodCurrent],
+            array(
+                'desc' => $descCurrent .$sr. $lineTextCurrent
+            )
+        );
+
+        $this->data = array_merge(
+            $data,
+            array(
+                'methods' => $methods
+            )
+        );
     }
 
-    private function setMethodDocPrev()
+    private function setMethodDocControllerPrev()
+    {
+                $lineCurrent = $this->lineCurrent;
+
+        switch ($lineCurrent['lineTypeParent'])
+        {
+            case 'param':
+                $this->setMethodDocParamPrev();
+            break;
+            case 'return':
+                $this->setMethodDocReturnPrev();
+            break;
+        }
+    }
+
+    private function setMethodDocParamPrev()
     {
                    $data = $this->data;
         $methods = $data['methods'];
 
-        var_dump($this->lineTypeTarget);
+                     $lineCurrent = $this->lineCurrent;
+
+        $paramName = $lineCurrent['parent'];
+
+
+                   $descCurrent = $methods[$this->nameMethodCurrent]['listParam'][$paramName]['desc'];
+
+                                 $sr = empty($descCurrent) ? '' : ' ';
+
+        $descNew = $descCurrent .$sr. trim($lineCurrent['lineText']);
+
+                                 $methods[$this->nameMethodCurrent]['listParam'][$paramName]['desc'] = $descNew;
+
+        $this->data = array_merge(
+            $data,
+            array(
+                'methods' => $methods
+            )
+        );
+    }
+
+    private function setMethodDocReturnPrev()
+    {
+                   $data = $this->data;
+        $methods = $data['methods'];
+
+        $descCurrent = $methods[$this->nameMethodCurrent]['listReturn']['desc'];
+
+                                 $sr = empty($descCurrent) ? '' : ' ';
+
+                                           $lineCurrent = $this->lineCurrent;
+
+        $descNew = $descCurrent .$sr. trim($lineCurrent['lineText']);
+
+        $methods[$this->nameMethodCurrent]['listReturn']['desc'] = $descNew;
+
+        $this->data = array_merge(
+            $data,
+            array(
+                'methods' => $methods
+            )
+        );
     }
 
 

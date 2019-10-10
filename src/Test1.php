@@ -13,10 +13,10 @@ class Test1
      *      desc for P1 line 1
      *      desc for P1 line 2
      * @param int P2
-     *      desc for P1 line 1
-     *      desc for P1 line 2
+     *      desc for P2 line 1
+     *      desc for P2 line 2
      *
-     * @return array
+     * @return array desc for return INLINE
      *      desc for return line 1
      *      desc for return line 2
      */
