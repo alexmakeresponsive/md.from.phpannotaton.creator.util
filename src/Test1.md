@@ -10,7 +10,7 @@ Desc line 1 Desc line 2
 Сигнатура: 
 
 ```php
-fTest($p, )
+fTest($p)
 ```
 Аргументы: 
 

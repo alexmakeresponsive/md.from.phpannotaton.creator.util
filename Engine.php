@@ -525,7 +525,7 @@ class Engine
 
                     $sep = ', ';
 
-                if (count($methodDoc['listParam']) === $indexNumSignature)
+                if (count($listP) === $indexNumSignature)
                 {
                     $sep = '';
                 }
