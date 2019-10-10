@@ -89,6 +89,14 @@ class Engine
             return;
         }
 
+        if($nameMethod === '__construct')
+        {
+            return;
+        }
+
+//        var_dump($nameMethod);return;
+        var_dump($b);return;
+
         foreach ($b as $line)
         {
                                   $p = array(

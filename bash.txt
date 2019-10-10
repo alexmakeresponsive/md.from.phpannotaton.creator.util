@@ -1,0 +1,2 @@
+php /Volumes/data/work/software/web/code/backend/php/packages/cms/project/bitrix/home/lib/gbxtp.iblockapidatamanager.php56/doc.generator/md/call.php \
+    --pathToDir "/Volumes/data/work/software/web/code/backend/php/packages/cms/project/bitrix/home/lib/gbxtp.iblockapidatamanager.php56/src"
