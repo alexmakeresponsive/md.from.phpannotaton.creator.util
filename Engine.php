@@ -145,6 +145,7 @@ class Engine
             $map = array();
 
             $map[$methodName]['parameters'] = $method->getParameters();
+            $map[$methodName]['doc']        = array();
 
         foreach ($b as $index => $line)
         {
