@@ -1,7 +1,13 @@
 <?php
 
+require_once './lib/docClass.php';
+require_once './lib/docMethods.php';
+
 class Engine
 {
+    private $classDocClass   = null;
+    private $classDocMethods = null;
+
     private $data = array(
         'docClass' => null,
         'methods'  => array(),
@@ -28,6 +34,8 @@ class Engine
 
     public function __construct()
     {
+        $this->classDocClass   = new docClass();
+        $this->classDocMethods = new docMethods();
     }
 
     function createReflectionClass($p)
