@@ -40,13 +40,10 @@ class Engine
         $reflectionClass = new \ReflectionClass($p['nameClassWithNameSpace']);
 
 
-//        $this->getClassDoc($reflectionClass);
+        $this->getClassDoc($reflectionClass);
 
         $this->createMapMethodsDoc($reflectionClass);
 
-//                var_dump($this->mapMethodsDoc);
-//
-//
         $this->getMethodsDoc();
     }
 
@@ -147,11 +144,13 @@ class Engine
 
             $map = array();
 
+            $map[$methodName]['parameters'] = $method->getParameters();
+
         foreach ($b as $index => $line)
         {
             $lT = $this->getlineType($line);
 
-            $map[$methodName][$index] = array(
+            $map[$methodName]['doc'][$index] = array(
                 'lineType'       => $lT,
                 'lineTypeParent' => null,
                 'lineText' => $line,
@@ -163,23 +162,23 @@ class Engine
             {
                 $lineEx = explode(" ", $line);
 
-                $map[$methodName][$index]['key'] = $lineEx[2];
+                $map[$methodName]['doc'][$index]['key'] = $lineEx[2];
 
-                $map[$methodName][$index]['parent'] = false;
+                $map[$methodName]['doc'][$index]['parent'] = false;
             }
 
             if($lT === 'return')
             {
-                $map[$methodName][$index]['key'] = 'return';
+                $map[$methodName]['doc'][$index]['key'] = 'return';
 
-                $map[$methodName][$index]['parent'] = false;
+                $map[$methodName]['doc'][$index]['parent'] = false;
             }
 
             if($lT === 'prev')
             {
-                $map[$methodName][$index]['parent'] = $map[$methodName][$index -1]['parent'] === false ? $map[$methodName][$index -1]['key'] : $map[$methodName][$index -1]['parent'];
+                $map[$methodName]['doc'][$index]['parent'] = $map[$methodName]['doc'][$index -1]['parent'] === false ? $map[$methodName]['doc'][$index -1]['key'] : $map[$methodName]['doc'][$index -1]['parent'];
 
-                $map[$methodName][$index]['lineTypeParent'] = $map[$methodName][$index -1]['parent'] === false ? $map[$methodName][$index -1]['lineType'] : $map[$methodName][$index -1]['lineTypeParent'];;
+                $map[$methodName]['doc'][$index]['lineTypeParent'] = $map[$methodName]['doc'][$index -1]['parent'] === false ? $map[$methodName]['doc'][$index -1]['lineType'] : $map[$methodName]['doc'][$index -1]['lineTypeParent'];
             }
         }
 
@@ -210,7 +209,7 @@ class Engine
 
             $this->lineCurrent = array();
 
-            $this->getMethodDoc($methodMap);
+            $this->getMethodDoc($methodMap['doc']);
         }
 
             $this->writeFile();
@@ -449,8 +448,6 @@ class Engine
         );
     }
 
-
-
     private function dataPrepare()
     {
                  $data = $this->data;
@@ -495,83 +492,84 @@ class Engine
 
                 ob_start();
 
-//            echo '## Класс '. $this->nameClass ."\n";
-//            echo "\n";
-//            echo '### '. $data['docClass'] ."\n";
-//            echo "\n";
-//
-//        foreach ($data['methods'] as $methodName =>$methodDoc)
-//        {
-//            echo '#### '. $methodName ."\n";
-//            echo "\n";
-//
-//            if(!empty($methodDoc['desc']))
-//            {
-//                echo 'Описание: '."\n";
-//
-//                $desc = $methodDoc['desc'];
-//
-//                echo "$desc"."\n\n";
-//            }
-//
-//            echo 'Сигнатура: '."\n\n";
-//            echo "```php"."\n";
-//                              $listParamSignature = '';
-//                              $indexNumSignature = 0;
-//
-//            foreach ($methodDoc['listParam'] as $param)
-//            {
-//                              $indexNumSignature++;
-//
-//                    $sep = ', ';
-//
-//                if (count($methodDoc['listParam']) === $indexNumSignature)
-//                {
-//                    $sep = '';
-//                }
-//                                       $name = $param['name'];
-//
-//                $listParamSignature .= $name .$sep;
-//            }
-//
-//            echo "$methodName($listParamSignature)"."\n";
-//            echo "```"."\n";
-//
-//            if(!empty($methodDoc['listParam']))
-//            {
-//                echo 'Аргументы: '."\n\n";
-//                echo "| Название | Тип | Описание |"."\n";
-//                echo "| :--- | :--- | :--- |"."\n";
-//            }
-//
-//            foreach ($methodDoc['listParam'] as $param)
-//            {
-//                $name = $param['name'];
-//                $type = $param['type'];
-//                $desc = $param['desc'];
-//
-//                echo "| $name | $type | $desc |"."\n";
-//            }
-//
-//            if(!empty($methodDoc['listReturn']))
-//            {
-//                echo 'Возвращаемое значение: '."\n\n";
-//                echo "| Тип | Описание |"."\n";
-//                echo "| :--- | :--- |"."\n";
-//
-//                $type = $methodDoc['listReturn']['type'];
-//                $desc = $methodDoc['listReturn']['desc'];
-//
-//                echo "| $type | $desc |"."\n";
-//            }
-//        }
+            echo '## Класс '. $this->nameClass ."\n";
+            echo "\n";
+            echo '### '. $data['docClass'] ."\n";
+            echo "\n";
 
-            print_r($data);
+        foreach ($data['methods'] as $methodName =>$methodDoc)
+        {
+            echo '#### '. $methodName ."\n";
+            echo "\n";
+
+            if(!empty($methodDoc['desc']))
+            {
+                echo 'Описание: '."\n";
+
+                $desc = $methodDoc['desc'];
+
+                echo "$desc"."\n\n";
+            }
+
+            echo 'Сигнатура: '."\n\n";
+            echo "```php"."\n";
+                              $listParamSignature = '';
+                              $indexNumSignature = 0;
+
+                     $map = $this->mapMethodsDoc;
+            $listP = $map[$methodName]['parameters'];
+
+            foreach ($listP as $param)
+            {
+                              $indexNumSignature++;
+
+                    $sep = ', ';
+
+                if (count($methodDoc['listParam']) === $indexNumSignature)
+                {
+                    $sep = '';
+                }
+                                       $name = '$'. $param->getName();
+
+                $listParamSignature .= $name .$sep;
+            }
+
+            echo "$methodName($listParamSignature)"."\n";
+            echo "```"."\n";
+
+            if(!empty($methodDoc['listParam']))
+            {
+                echo 'Аргументы: '."\n\n";
+                echo "| Название | Тип | Описание |"."\n";
+                echo "| :--- | :--- | :--- |"."\n";
+            }
+
+            foreach ($methodDoc['listParam'] as $param)
+            {
+                $name = $param['name'];
+                $type = $param['type'];
+                $desc = $param['desc'];
+
+                echo "| $name | $type | $desc |"."\n";
+            }
+
+            if(!empty($methodDoc['listReturn']))
+            {
+                echo 'Возвращаемое значение: '."\n\n";
+                echo "| Тип | Описание |"."\n";
+                echo "| :--- | :--- |"."\n";
+
+                $type = $methodDoc['listReturn']['type'];
+                $desc = $methodDoc['listReturn']['desc'];
+
+                echo "| $type | $desc |"."\n";
+            }
+        }
 
         $dataToWrite = ob_get_clean();
 
 
-                    $filePath = $this->pathToDir .'/'. $this->nameClass .'.txt';
+                    $filePath = $this->pathToDir .'/'. $this->nameClass .'.md';
 
         $fp = fopen($filePath, 'w+');
 

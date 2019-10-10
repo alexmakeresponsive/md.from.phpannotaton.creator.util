@@ -2,7 +2,12 @@
 
 namespace Some\NameSp;
 
-
+/**
+ * Class desc line 1
+ * Class desc line 2
+ * Class desc line 3
+ * Class desc line 4
+ **/
 class Test1
 {
     /**
