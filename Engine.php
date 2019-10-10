@@ -142,7 +142,7 @@ class Engine
 
         $methodName = $method->getName();
 
-            $map = array();
+            $map = $this->mapMethodsDoc;
 
             $map[$methodName]['parameters'] = $method->getParameters();
             $map[$methodName]['doc']        = array();
