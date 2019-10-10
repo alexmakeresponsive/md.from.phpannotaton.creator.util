@@ -10,6 +10,11 @@ class Engine
     private $pathToDir = null;
     private $nameClass = null;
 
+    /**
+     * @var string desc|param|return|prev
+     * */
+    private $lineType = null;
+
     public function __construct()
     {
     }
@@ -28,7 +33,7 @@ class Engine
         $this->getClassMethods($reflectionClass);
     }
 
-    private function prepareDoc($s)
+    private function prepareDocClass($s)
     {
         $sT = trim($s);
 
@@ -51,11 +56,36 @@ class Engine
         return $b;
     }
 
+    private function prepareDocMethod($s)
+    {
+        $sT = trim($s);
+
+        $sTExp = explode("\n", $sT);
+
+        $b = array();
+
+        foreach ($sTExp as $line)
+        {
+            $lineC = str_replace(array('/', '*'), '', trim($line));
+
+            $lineCs = substr($lineC, 1);
+
+            if (!preg_match("/[A-Za-zА-Яа-я]/", $lineCs))
+            {
+                continue;
+            }
+
+            $b[] = $lineCs;
+        }
+
+        return $b;
+    }
+
     private function getClassDoc($class)
     {
         $s = $class->getDocComment();
 
-        $b = $this->prepareDoc($s);
+        $b = $this->prepareDocClass($s);
 
         $this->data = array_merge(
             $this->data,
@@ -72,9 +102,10 @@ class Engine
         foreach ($collection as $reflectonMethod)
         {
             $this->getMethodDoc($reflectonMethod);
+            echo "\n";
         }
 
-            $this->writeFile();
+        //    $this->writeFile();
     }
 
     private function getMethodDoc($method)
@@ -82,20 +113,14 @@ class Engine
         $s          = $method->getDocComment();
         $nameMethod = $method->getName();
 
-        $b = $this->prepareDoc($s);
+        $b = $this->prepareDocMethod($s);
 
-        if(empty($s))
+        if(empty($b))
         {
             return;
         }
 
-        if($nameMethod === '__construct')
-        {
-            return;
-        }
-
-//        var_dump($nameMethod);return;
-        var_dump($b);return;
+        var_dump($nameMethod . "");
 
         foreach ($b as $line)
         {
@@ -104,158 +129,81 @@ class Engine
                                       'line'       => $line,
                                   );
 
-            $this->lineController($p);
+
+            $this->lineType = $this->getlineType($line);
+
+            var_dump($this->lineType);
+
+            //$this->lineController($p);
         }
+
+//        die;
+    }
+
+    private function getlineType($l)
+    {
+                    $lExp = explode(' ', $l);
+
+
+                $t = null;
+
+
+            if (empty($lExp[0]))
+            {
+                $t = 'prev';
+            }
+            else
+            {
+                $t = 'desc';
+            }
+
+        switch (substr($lExp[0], 0, 2))
+        {
+            case '@p':
+                $t = 'param';
+            break;
+            case '@r':
+                $t = 'return';
+            break;
+        }
+
+        return $t;
     }
 
     private function lineController($p)
     {
-        switch (substr($p['line'], 0, 2))
+                   $line = $p['line'];
+
+        if (substr($line, 0, 1) !== '@')
+        {
+                $this->setMethodDocDesc($p);
+            return;
+        }
+
+        switch (substr($line, 0, 2))
         {
             case '@p':
-                $this->getMethodDocParam($p);
+                $this->setMethodDocParam($p);
             break;
             case '@r':
-                $this->getMethodDocReturn($p);
-            break;
-            default:
-                $this->getMethodDocDesc($p);
+                $this->setMethodDocReturn($p);
             break;
         }
     }
 
-    private function getMethodDocParam($p)
+    private function setMethodDocParam($p)
     {
-        $data    = $this->data;
-        $methods = $data['methods'];
-
-        if(empty($p['line']))
-        {
-            $methods[$p['nameMethod']]['listParam'] = array();
-            return;
-        }
-
-        $lineEx = explode(" ", $p['line']);
-
-
-        if (substr($lineEx[1], 0, 1) === '$')
-        {
-            array_splice($lineEx, 2, 0, $lineEx[1] ."");
-
-            $lineEx[1] = '';
-        }
-
-
-        $paramType = $lineEx[1];
-        $paramName = $lineEx[2];
-
-        unset($lineEx[0],$lineEx[1],$lineEx[2]);
-
-        $paramDesc = implode(' ', $lineEx);
-
-
-                                    if(!isset($methods[$p['nameMethod']]['listParam']))
-                                    {
-                                              $methods[$p['nameMethod']]['listParam'] = array();
-                                    }
-
-                             $methods[$p['nameMethod']] = array_merge(
-                                 $methods[$p['nameMethod']],
-                                 array(
-                                     'listParam' => array_merge(
-                                         $methods[$p['nameMethod']]['listParam'],
-                                         array(
-                                             $paramName => array(
-                                                 'name' => $paramName,
-                                                 'type' => $paramType,
-                                                 'desc' => $paramDesc,
-                                             )
-                                         )
-                                     )
-                                 )
-                             );
-
-        $this->data = array_merge(
-            $data,
-            array(
-                'methods' => $methods
-            )
-        );
+        $this->lineType = 'param';
     }
 
-    private function getMethodDocReturn($p)
+    private function setMethodDocReturn($p)
     {
-        $data    = $this->data;
-        $methods = $data['methods'];
-
-        if(empty($p['line']))
-        {
-            $methods[$p['nameMethod']]['listReturn'] = array();
-            return;
-        }
-
-        $lineEx = explode(" ", $p['line']);
-
-        $returnType = $lineEx[1];
-
-        unset($lineEx[0],$lineEx[1]);
-
-        $returnDesc = implode(' ', $lineEx);
-
-                            if(!isset($methods[$p['nameMethod']]['listReturn']))
-                            {
-                                      $methods[$p['nameMethod']]['listReturn'] = array();
-                            }
-
-                            $methods[$p['nameMethod']] = array_merge(
-                                $methods[$p['nameMethod']],
-                                array(
-                                    'listReturn' => array(
-                                        'type' => $returnType,
-                                        'desc' => $returnDesc,
-                                    )
-                                )
-                            );
-
-        $this->data = array_merge(
-            $data,
-            array(
-                'methods' => $methods
-            )
-        );
+        $this->lineType = 'return';
     }
 
-    private function getMethodDocDesc($p)
+    private function setMethodDocDesc($p)
     {
-        $data    = $this->data;
-        $methods = $data['methods'];
-
-        if(empty($p['line']))
-        {
-           $methods[$p['nameMethod']]['desc'] = null;
-           return;
-        }
-                             if(!isset($methods[$p['nameMethod']]['desc']))
-                             {
-                                       $methods[$p['nameMethod']]['desc'] = null;
-                             }
-                                                                    $descCurrent = $methods[$p['nameMethod']]['desc'];
-
-                                                        $sr = empty($descCurrent) ? '' : ' ';
-
-                             $methods[$p['nameMethod']] = array_merge(
-                                 $methods[$p['nameMethod']],
-                                 array(
-                                     'desc' => $descCurrent .$sr. $p['line']
-                                 )
-                             );
-
-        $this->data = array_merge(
-            $data,
-            array(
-                'methods' => $methods
-            )
-        );
+        $this->lineType = 'desc';
     }
 
 
@@ -303,6 +251,8 @@ class Engine
 
         $data = $this->data;
 
+
+        return;
 
                 ob_start();
 
