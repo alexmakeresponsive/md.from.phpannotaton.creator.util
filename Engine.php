@@ -593,7 +593,7 @@ class Engine
                 echo "Пример использования: " ."\n\n";
                 echo "```php"."\n";
 
-                echo '$r = $manager->'. "$methodName([";
+                echo '$r = manager::'. "$methodName([";
                 echo "\n";
 
                 foreach ($methodDoc['listParam'] as $param)
