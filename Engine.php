@@ -601,7 +601,20 @@ class Engine
                     $name = $param['name'];
                     $type = $param['type'];
 
-                    echo "    '$name' => '$type'," ."\n";
+                    if ($type === 'int')
+                    {
+                        $type = 1;
+                    }
+                    if ($type === 'string')
+                    {
+                        $type = "'code'";
+                    }
+                    if ($type === 'array')
+                    {
+                        $type = "[\n        //parameters \n    ]";
+                    }
+
+                    echo "    '$name' => $type," ."\n";
                 }
 
                 echo ']);';
