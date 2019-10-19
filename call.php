@@ -5,26 +5,27 @@
 require_once __DIR__ . '/Engine.php';
 
 
-$options = getopt('ptc:', array(
-    'pathToDir:',
+$options = getopt('ptc:pta:', array(
+    'pathToSrc:',
+    'pathToAsset:',
 ));
 
-if (empty($options['pathToDir']))
+if (empty($options['pathToSrc']))
 {
-    die("Need set pathToDir \n");
+    die("Need set pathToSrc \n");
 }
 
 
 
                      $countLevel = 0;
-                     $dir        = $options['pathToDir'];
+                     $dir        = $options['pathToSrc'];
                      $listDhNotClosed = array();
 
          dirReadDown($dir);
 
 function dirReadDown($dir)
 {
-    global $countLevel, $engine, $listDhNotClosed;
+    global $countLevel, $engine, $listDhNotClosed, $options;
 
                          $path_parts = pathinfo($dir);
 
@@ -69,6 +70,7 @@ function dirReadDown($dir)
         $engine->createReflectionClass(array(
             'pathToClass'            => $dir,
             'pathToDir'              => $path_parts['dirname'],
+            'pathToAsset'            => $options['pathToAsset'],
             'nameClass'              => $path_parts['filename'],
             'nameClassWithNameSpace' => $namespace .'\\'. $path_parts['filename'],
         ));
