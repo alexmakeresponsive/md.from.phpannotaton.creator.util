@@ -5,9 +5,9 @@
 require_once __DIR__ . '/Engine.php';
 
 
-$options = getopt('ptc:pta:', array(
+$options = getopt('ptc:ptd:', array(
     'pathToSrc:',
-    'pathToAsset:',
+    'pathToDoc:',
 ));
 
 if (empty($options['pathToSrc']))
@@ -70,7 +70,7 @@ function dirReadDown($dir)
         $engine->createReflectionClass(array(
             'pathToClass'            => $dir,
             'pathToDir'              => $path_parts['dirname'],
-            'pathToAsset'            => $options['pathToAsset'],
+            'pathToDoc'              => $options['pathToDoc'],
             'nameClass'              => $path_parts['filename'],
             'nameClassWithNameSpace' => $namespace .'\\'. $path_parts['filename'],
         ));

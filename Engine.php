@@ -33,6 +33,8 @@ class Engine
     function createReflectionClass($p)
     {
         $this->pathToDir = $p['pathToDir'];
+        $this->pathToDoc = $p['pathToDoc'];
+
         $this->nameClass = $p['nameClass'];
 
                            require $p['pathToClass'];
@@ -495,7 +497,12 @@ class Engine
 
             echo '## Класс '. $this->nameClass ."\n";
             echo "\n";
-            echo '### '. $data['docClass'] ."\n";
+            echo ''. $data['docClass'] ."\n";
+            echo "\n";
+            echo "Ниже приведено описание методов класса";
+            echo "\n";
+            echo "\n";
+            echo "![s](../../asset/image/separator/30x30.png)";
             echo "\n";
 
         foreach ($data['methods'] as $methodName =>$methodDoc)
@@ -567,12 +574,36 @@ class Engine
 
                 echo "| $type | $desc |"."\n";
             }
+
+
+            echo "\n";
+            echo "Пример использования: " ."\n\n";
+            echo "```php"."\n";
+            echo "call_user_func('M');" ."\n";
+            echo "```"."\n";
+            echo "\n";
+            echo "![s](../../asset/image/separator/30x30.png)";
+            echo "\n";
         }
 
         $dataToWrite = ob_get_clean();
 
 
-                    $filePath = $this->pathToDir .'/'. $this->nameClass .'.md';
+                    $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'src'));
+                    $dirNameCl = str_replace(array('/', 'src'), '', $dirName);
+
+                    if(empty($dirNameCl))
+                    {
+                        return;
+                    }
+
+                    $filePath = $this->pathToDoc .'/content/'. $dirNameCl .'/'. $this->nameClass .'.md';
+
+//                    var_dump([
+//                        $filePath
+//                    ]);
+//
+//                    return;
 
         $fp = fopen($filePath, 'w+');
 
