@@ -492,6 +492,16 @@ class Engine
 
         $data = $this->data;
 
+        $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'src'));
+        $dirNameCl = str_replace(array('/', 'src'), '', $dirName);
+
+        if(empty($dirNameCl))
+        {
+            return;
+        }
+
+        $filePathToMd  = $this->pathToDoc .'/content/'.    $dirNameCl .'/'. $this->nameClass .'.md';
+        $filePathToCode = $this->pathToDoc .'/asset/code/'. $dirNameCl;
 
                 ob_start();
 
@@ -576,39 +586,47 @@ class Engine
             }
 
 
-            echo "\n";
-            echo "Пример использования: " ."\n\n";
-            echo "```php"."\n";
-            echo "call_user_func('M');" ."\n";
-            echo "```"."\n";
-            echo "\n";
-            echo "![s](../../asset/image/separator/30x30.png)";
-            echo "\n";
+
+            if($methodName !== '__construct')
+            {
+                echo "\n";
+                echo "Пример использования: " ."\n\n";
+                echo "```php"."\n";
+
+                echo '$r = $manager->'. "$methodName([";
+                echo "\n";
+
+                foreach ($methodDoc['listParam'] as $param)
+                {
+                    $name = $param['name'];
+                    $type = $param['type'];
+
+                    echo "    '$name' => '$type'," ."\n";
+                }
+
+                echo ']);';
+                echo "\n";
+
+                echo "```"."\n";
+                echo "\n";
+                echo "![s](../../asset/image/separator/30x30.png)";
+                echo "\n";
+            }
+            else
+            {
+                echo "\n";
+                echo "![s](../../asset/image/separator/30x30.png)";
+                echo "\n";
+            }
         }
 
         $dataToWrite = ob_get_clean();
 
 
-                    $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'src'));
-                    $dirNameCl = str_replace(array('/', 'src'), '', $dirName);
+        $fp = fopen($filePathToMd, 'w+');
 
-                    if(empty($dirNameCl))
-                    {
-                        return;
-                    }
-
-                    $filePath = $this->pathToDoc .'/content/'. $dirNameCl .'/'. $this->nameClass .'.md';
-
-//                    var_dump([
-//                        $filePath
-//                    ]);
-//
-//                    return;
-
-        $fp = fopen($filePath, 'w+');
-
-        fwrite($fp, $dataToWrite);
-        fclose($fp);
+              fwrite($fp, $dataToWrite);
+              fclose($fp);
     }
 
     function __destruct()
