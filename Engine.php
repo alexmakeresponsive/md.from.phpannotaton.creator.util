@@ -500,6 +500,7 @@ class Engine
 
         foreach ($data['methods'] as $methodName =>$methodDoc)
         {
+            echo "\n\n";
             echo '#### '. $methodName ."\n";
             echo "\n";
 
@@ -556,6 +557,7 @@ class Engine
 
             if(!empty($methodDoc['listReturn']))
             {
+                echo "\n";
                 echo 'Возвращаемое значение: '."\n\n";
                 echo "| Тип | Описание |"."\n";
                 echo "| :--- | :--- |"."\n";
