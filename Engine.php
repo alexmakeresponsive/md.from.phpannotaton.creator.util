@@ -572,8 +572,8 @@ class Engine
 
                 $type = $param['type'];
 
-                $name = $this->getName($param['name'], $param['desc']);
-                $desc = $this->getDesc($param['desc']);
+                $name = $param['name'];
+                $desc = $param['desc'];
 
                 echo "| $name | $type | $desc |"."\n";
             }
