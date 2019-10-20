@@ -89,7 +89,7 @@ function dirReadDown($dir)
     {
         $countLevel++;
 
-        if ($countLevel>9)
+        if ($countLevel>99)
         {
             var_dump($listDhNotClosed);
 
