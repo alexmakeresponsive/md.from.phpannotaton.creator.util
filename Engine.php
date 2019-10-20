@@ -492,9 +492,9 @@ class Engine
 
         $data = $this->data;
 
-        $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'draft'));
-        $dirNameCl = str_replace(array('draft/'), '', $dirName);
-        $dirNameCl2 = str_replace(array('draft'), '', $dirName);
+        $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'src'));
+        $dirNameCl = str_replace(array('src/'), '', $dirName);
+        $dirNameCl2 = str_replace(array('src'), '', $dirName);
 
         if(empty($dirNameCl2))
         {
