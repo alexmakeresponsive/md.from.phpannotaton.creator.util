@@ -65,6 +65,15 @@ function dirReadDown($dir)
                        fclose($handle);
         }
 
+
+            $isClass = strpos('QWERTYUIOPASDFGHJKLZXCVBNM', substr($path_parts['filename'], 0, 1));
+
+        if(!$isClass)
+        {
+            return;
+        }
+
+
         $engine = new Engine();
 
         $engine->createReflectionClass(array(
