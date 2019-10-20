@@ -492,16 +492,20 @@ class Engine
 
         $data = $this->data;
 
-        $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'src'));
-        $dirNameCl = str_replace(array('/', 'src'), '', $dirName);
+        $dirName   = substr($this->pathToDir, strrpos($this->pathToDir, 'draft'));
+        $dirNameCl = str_replace(array('draft/'), '', $dirName);
+        $dirNameCl2 = str_replace(array('draft'), '', $dirName);
 
-        if(empty($dirNameCl))
+        if(empty($dirNameCl2))
         {
             return;
         }
 
-        $filePathToMd  = $this->pathToDoc .'/content/'.    $dirNameCl .'/'. $this->nameClass .'.md';
-        $filePathToCode = $this->pathToDoc .'/asset/code/'. $dirNameCl;
+//        var_dump($dirNameCl2);
+//        return;
+
+        $filePathToMd  = $this->pathToDoc .'/content/'.    $dirNameCl2 .'/'. $this->nameClass .'.md';
+        $filePathToCode = $this->pathToDoc .'/asset/code/'. $dirNameCl2;
 
                 ob_start();
 
@@ -565,9 +569,11 @@ class Engine
 
             foreach ($methodDoc['listParam'] as $param)
             {
-                $name = $param['name'];
+
                 $type = $param['type'];
-                $desc = $param['desc'];
+
+                $name = $this->getName($param['name'], $param['desc']);
+                $desc = $this->getDesc($param['desc']);
 
                 echo "| $name | $type | $desc |"."\n";
             }
@@ -627,6 +633,9 @@ class Engine
 
         $dataToWrite = ob_get_clean();
 
+//        var_dump($filePathToMd);
+//        return;
+
 
         $fp = fopen($filePathToMd, 'w+');
 
@@ -637,5 +646,69 @@ class Engine
     function __destruct()
     {
 
+    }
+
+    private function getName($name, $desc)
+    {
+        if(substr($desc,0, 1) !== '@')
+        {
+            return $name;
+        }
+
+
+        $docTabLength      = strlen('@tab int ');
+        $docDescWithoutTab = substr($desc, $docTabLength);
+
+        $docDescPos = strpos($docDescWithoutTab, ' ');
+
+        $tabValue = intval(substr($docDescWithoutTab, 0, $docDescPos));
+
+
+        $tabHtml = $this->getIndent($tabValue);
+
+//        ob_start();
+//
+//        var_dump([
+//            $tabHtml,
+//            $desc
+//        ]);
+//
+//        $dataToWrite = ob_get_clean();
+//
+//
+//                      $pathLog = '/Volumes/data/work/software/web/tool/backend/php/amr-phpdoc-to-md-generator/log/getName.txt';
+//        $fp   = fopen($pathLog, 'a+');
+//
+//                fwrite($fp, $dataToWrite);
+//                fclose($fp);
+
+        return $tabHtml . $name;
+    }
+
+    private function getDesc($desc)
+    {
+        return trim(str_replace(array(
+            '@tab int 1',
+            '@tab int 2',
+            '@tab int 3',
+            '@tab int 4',
+            '@tab int 5',
+            '@tab int 6',
+            '@tab int 7',
+            '@tab int 8',
+        ), '', $desc));
+    }
+
+    private function getIndent($count)
+    {
+        $tab  = '&nbsp;&nbsp;&nbsp;&nbsp;';
+        $tabR = '';
+
+        for ($i=1; $i <= $count; $i++)
+        {
+            $tabR .= $tab;
+        }
+
+        return $tabR;
     }
 }
