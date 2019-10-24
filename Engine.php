@@ -504,7 +504,7 @@ class Engine
 //        var_dump($dirNameCl2);
 //        return;
 
-        $filePathToMd  = $this->pathToDoc .'/content/'.    $dirNameCl2 .'/'. $this->nameClass .'.md';
+        $filePathToMd  = $this->pathToDoc .'/content'.    $dirNameCl2 .'/'. $this->nameClass .'.md';
         $filePathToCode = $this->pathToDoc .'/asset/code/'. $dirNameCl2;
 
                 ob_start();
